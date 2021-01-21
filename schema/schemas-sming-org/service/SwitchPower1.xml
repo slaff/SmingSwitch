@@ -1,0 +1,68 @@
+<scpd xmlns="urn:schemas-upnp-org:service-1-0">
+	<specVersion>
+		<major>1</major>
+		<minor>0</minor>
+	</specVersion>
+	<actionList>
+		<action>
+			<name>SetPower</name>
+			<argumentList>
+				<argument>
+					<name>PowerStatusValue</name>
+					<relatedStateVariable>PowerStatus</relatedStateVariable>
+					<direction>in</direction>
+				</argument>
+			</argumentList>
+		</action>
+		<action>
+			<name>GetPower</name>
+			<argumentList>
+				<argument>
+					<name>RetPowerStatusValue</name>
+					<relatedStateVariable>PowerStatus</relatedStateVariable>
+					<direction>out</direction>
+				</argument>
+			</argumentList>
+		</action>
+
+        <action>
+			<name>GetHumidity</name>
+			<argumentList>
+				<argument>
+					<name>HumidityValue</name>
+					<relatedStateVariable>Humidity</relatedStateVariable>
+					<direction>out</direction>
+				</argument>
+			</argumentList>
+            <name>GetTemperature</name>
+            <argumentList>
+                <argument>
+                    <name>TemperatureValue</name>
+                    <relatedStateVariable>Temperature</relatedStateVariable>
+                    <direction>out</direction>
+                </argument>
+            </argumentList>
+            <!-- TODO: Add here also comfort and dewpoint statuses -->
+		</action>
+
+	</actionList>
+	<serviceStateTable>
+		<stateVariable sendEvents="no">
+			<name>PowerStatus</name>
+			<dataType>boolean</dataType>
+			<defaultValue>0</defaultValue>
+		</stateVariable>
+		<stateVariable sendEvents="no">
+			<name>Humidity</name>
+			<dataType>float</dataType>
+			<defaultValue>0</defaultValue>
+		</stateVariable>
+        <stateVariable sendEvents="no">
+            <name>Temperature</name>
+            <dataType>float</dataType>
+            <defaultValue>0</defaultValue>
+        </stateVariable>
+	</serviceStateTable>
+	<serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>
+</scpd>
+

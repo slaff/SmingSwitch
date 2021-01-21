@@ -1,0 +1,21 @@
+<device xmlns="urn:schemas-upnp-org:device-1-0">
+	<deviceType>urn:schemas-sming-org:device:Switch:1</deviceType>
+	<friendlyName>Sming Switch</friendlyName>
+	<manufacturer>Sming development team</manufacturer>
+	<manufacturerURL>https://github.com/slaff/SmingSwitch</manufacturerURL>
+	<modelDescription>A simple switch that can be used to control your fan or other devices attached to it</modelDescription>
+	<modelName>Sming Switch</modelName>
+	<modelNumber>1.0</modelNumber>
+    <serialNumber>0.1</serialNumber>
+    <UDN>uuid:abcdefg-0123-4567-8976-01234567</UDN>
+    <serviceList>
+        <service>
+            <serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>
+            <serviceId>urn:upnp-org:serviceId:SwitchPower:1</serviceId>
+            <SCPDURL>/xml/SwitchPower-scpd.xml</SCPDURL>
+            <controlURL>/SwitchPower/Control</controlURL>
+            <eventSubURL />
+        </service>
+    </serviceList>
+    <presentationURL/>
+</device>

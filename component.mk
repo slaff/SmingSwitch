@@ -21,7 +21,7 @@ BUTTON_PIN ?= 9
 # ARDUINO_LIBRARIES :=
 
 ## List the names of any additional Components required for this project
-# COMPONENT_DEPENDS :=
+COMPONENT_DEPENDS := DHTesp UPnP-Schema
 
 ## Set paths for any GIT submodules your application uses
 # COMPONENT_SUBMODULES :=
@@ -49,5 +49,3 @@ DISABLE_SPIFFS := 1
 ENABLE_SMART_CONFIG = 1
  
 APP_CFLAGS := -DLED_PIN=$(LED_PIN) -DSWITCH_PIN=$(SWITCH_PIN) -DDHT_PIN=$(DHT_PIN) -DBUTTON_PIN=$(BUTTON_PIN)
-
-COMPONENT_DEPENDS := DHTesp

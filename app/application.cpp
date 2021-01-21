@@ -1,18 +1,22 @@
 #include <SmingCore.h>
 #include <Libraries/DHTesp/DHTesp.h>
+#include <Network/UPnP/DeviceHost.h>
+#include <Network/UPnP/ControlPoint.h>
+#include <Network/SSDP/Server.h>
 
 Timer humidityTimer;
 Timer procTimer;
 Timer switchTimer;
 bool state = true;
 bool switchedAllowed = true;
+
+// Public states of the device
 float humidity = 0;
 float temperature = 0;
-
-
 bool running = false;
 
 DHTesp dht;
+HttpServer server;
 
 void onNtpReceive(NtpClient& client, time_t timestamp);
 NtpClient ntpClient(onNtpReceive);
@@ -61,12 +65,62 @@ bool onSmartConfig(SmartConfigEvent event, const SmartConfigEventInfo& info)
 	return false;
 }
 
+int onHttpRequest(HttpServerConnection& connection, HttpRequest& request, HttpResponse& response)
+{
+	// Pass the request into the UPnP stack
+	if(UPnP::deviceHost.onHttpRequest(connection)) {
+		return 0;
+	}
+
+	// Not a UPnP request. Handle any application-specific pages here
+
+	auto path = request.uri.getRelativePath();
+	if(path.length() == 0 || path == F("index.html")) {
+		auto stream = UPnP::deviceHost.generateDebugPage(F("Basic UPnP"));
+		response.sendDataStream(stream, MIME_HTML);
+		return 0;
+	}
+
+	Serial.print("Page not found: ");
+	Serial.println(request.uri.Path);
+
+	response.code = HTTP_STATUS_NOT_FOUND;
+	return 0;
+}
+
+void initUPnP()
+{
+	// Configure our HTTP Server to listen for HTTP requests
+	server.listen(80);
+	server.paths.setDefault(onHttpRequest);
+	server.setBodyParser(MIME_JSON, bodyToStringParser);
+	server.setBodyParser(MIME_XML, bodyToStringParser);
+
+	if(!UPnP::deviceHost.begin()) {
+		debug_e("UPnP initialisation failed");
+		return;
+	}
+
+//	// Advertise our Tea Pot
+//	UPnP::deviceHost.registerDevice(&teapot);
+//
+//	// These two devices handle service requests
+//	UPnP::deviceHost.registerDevice(&wemo1);
+//	UPnP::deviceHost.registerDevice(&wemo2);
+
+//	// Control LED in response to wemo1 SetBinaryState action
+//	pinMode(LED_PIN, OUTPUT);
+//	digitalWrite(LED_PIN, true);
+//	wemo1.onStateChange([](auto& device) { setLed(device.getState()); });
+}
+
 void onConnected(IpAddress ip, IpAddress netmask, IpAddress gateway)
 {
 	procTimer.stop();
 
 	// start NTP to get the current time and date...
 	ntpClient.requestTime();
+	initUPnP();
 }
 
 void onDisconnected(String ssid, const MacAddress& bssid, WifiDisconnectReason reason)
@@ -82,7 +136,7 @@ void onNtpReceive(NtpClient& client, time_t timestamp)
 {
 	SystemClock.setTime(timestamp, eTZ_UTC); //System timezone is LOCAL so to set it from UTC we specify TZ
 	debug_d("Time synchronized: %s", SystemClock.getSystemTimeString().c_str());
-	DateTime today(SystemClock.now());
+	DateTime today(timestamp);
 	switchedAllowed = true;
 	// check what is the time -> if earlier than 7:00 and later than 21:00 -> don't start the switch (attached fan) yet
 	if(today.Hour < 7 && today.Hour > 20) {

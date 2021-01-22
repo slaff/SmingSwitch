@@ -1,5 +1,5 @@
 <device xmlns="urn:schemas-upnp-org:device-1-0">
-	<deviceType>urn:schemas-sming-org:device:Switch:1</deviceType>
+	<deviceType>urn:schemas-sming-org:device:SmingSwitch:1</deviceType>
 	<friendlyName>Sming Switch</friendlyName>
 	<manufacturer>Sming development team</manufacturer>
 	<manufacturerURL>https://github.com/slaff/SmingSwitch</manufacturerURL>
@@ -10,10 +10,10 @@
     <UDN>uuid:abcdefg-0123-4567-8976-01234567</UDN>
     <serviceList>
         <service>
-            <serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>
-            <serviceId>urn:upnp-org:serviceId:SwitchPower:1</serviceId>
-            <SCPDURL>/xml/SwitchPower-scpd.xml</SCPDURL>
-            <controlURL>/SwitchPower/Control</controlURL>
+            <serviceType>urn:schemas-sming-org:service:SwitchTh016:1</serviceType>
+            <serviceId>urn:sming-org:serviceId:SwitchTh016:1</serviceId>
+            <SCPDURL>/xml/SwitchTh0161.xml</SCPDURL>
+            <controlURL>/upnp/control/SwitchTh0161</controlURL>
             <eventSubURL />
         </service>
     </serviceList>

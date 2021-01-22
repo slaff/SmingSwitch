@@ -63,6 +63,6 @@
             <defaultValue>0</defaultValue>
         </stateVariable>
 	</serviceStateTable>
-	<serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>
+	<serviceType>urn:schemas-sming-org:service:SwitchTh016:1</serviceType>
 </scpd>
 

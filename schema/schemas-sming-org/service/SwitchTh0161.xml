@@ -49,9 +49,6 @@
                 </argument>
             </argumentList>
 		</action>
-
-        <!-- TODO: Add here also comfort and dewpoint statuses -->
-
 	</actionList>
 	<serviceStateTable>
 		<stateVariable sendEvents="no">

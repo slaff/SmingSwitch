@@ -1,9 +1,9 @@
-# User Settings
+# User Settings (See also: https://templates.blakadder.com/sonoff_TH.html)
 
-LED_PIN ?= 2
-SWITCH_PIN ?= 7
-DHT_PIN ?=8
-BUTTON_PIN ?= 9
+LED_PIN ?= 13
+SWITCH_PIN ?= 12
+DHT_PIN ?= 14
+BUTTON_PIN ?= 0
 
 # End of User Settings
 

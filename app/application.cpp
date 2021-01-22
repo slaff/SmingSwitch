@@ -3,6 +3,7 @@
 #include <Network/UPnP/DeviceHost.h>
 #include <Network/UPnP/ControlPoint.h>
 #include <Network/SSDP/Server.h>
+#include <SmingSwitch.h>
 
 Timer humidityTimer;
 Timer procTimer;
@@ -18,13 +19,29 @@ bool running = false;
 DHTesp dht;
 HttpServer server;
 
-void onNtpReceive(NtpClient& client, time_t timestamp);
-NtpClient ntpClient(onNtpReceive);
+bool isPowerOn();
+void setPowerState(bool on);
+
+UPnP::schemas_sming_org::SmingSwitch smingSwitch(1, humidity, temperature, setPowerState, isPowerOn);
+
+NtpClient* ntpClient = nullptr;
 
 void blink()
 {
 	digitalWrite(LED_PIN, state);
 	state = !state;
+}
+
+bool isPowerOn()
+{
+	uint8_t state = digitalRead(SWITCH_PIN);
+	// TODO: read the state of the switch pin and return if it is on or off
+	return state == HIGH;
+}
+
+void setPowerState(bool on)
+{
+	digitalWrite(SWITCH_PIN, on ? HIGH : LOW);
 }
 
 void startSwitch()
@@ -34,10 +51,11 @@ void startSwitch()
 	}
 
 	if(humidity > 60 && switchedAllowed) {
-		digitalWrite(SWITCH_PIN, HIGH);
+		setPowerState(true);
 	}
 }
 
+#ifdef ENABLE_SMART_CONFIG
 bool onSmartConfig(SmartConfigEvent event, const SmartConfigEventInfo& info)
 {
 	switch(event) {
@@ -64,6 +82,7 @@ bool onSmartConfig(SmartConfigEvent event, const SmartConfigEventInfo& info)
 	// Don't do any internal processing
 	return false;
 }
+#endif
 
 int onHttpRequest(HttpServerConnection& connection, HttpRequest& request, HttpResponse& response)
 {
@@ -101,35 +120,8 @@ void initUPnP()
 		return;
 	}
 
-//	// Advertise our Tea Pot
-//	UPnP::deviceHost.registerDevice(&teapot);
-//
-//	// These two devices handle service requests
-//	UPnP::deviceHost.registerDevice(&wemo1);
-//	UPnP::deviceHost.registerDevice(&wemo2);
-
-//	// Control LED in response to wemo1 SetBinaryState action
-//	pinMode(LED_PIN, OUTPUT);
-//	digitalWrite(LED_PIN, true);
-//	wemo1.onStateChange([](auto& device) { setLed(device.getState()); });
-}
-
-void onConnected(IpAddress ip, IpAddress netmask, IpAddress gateway)
-{
-	procTimer.stop();
-
-	// start NTP to get the current time and date...
-	ntpClient.requestTime();
-	initUPnP();
-}
-
-void onDisconnected(String ssid, const MacAddress& bssid, WifiDisconnectReason reason)
-{
-	procTimer.start();
-
-	if(static_cast<uint8_t>(reason) > 200) {
-		WifiStation.smartConfigStart(SCT_EspTouch, onSmartConfig);
-	}
+	// Advertise our SmingSwitch device
+	UPnP::deviceHost.registerDevice(&smingSwitch);
 }
 
 void onNtpReceive(NtpClient& client, time_t timestamp)
@@ -144,7 +136,31 @@ void onNtpReceive(NtpClient& client, time_t timestamp)
 	}
 }
 
-void onButtonChange()
+void onConnected(IpAddress ip, IpAddress netmask, IpAddress gateway)
+{
+	procTimer.stop();
+
+	if(ntpClient == nullptr) {
+		ntpClient = new NtpClient(onNtpReceive);
+	}
+
+	// start NTP to get the current time and date...
+	ntpClient->requestTime();
+	initUPnP();
+}
+
+void onDisconnected(String ssid, const MacAddress& bssid, WifiDisconnectReason reason)
+{
+	procTimer.start();
+
+#ifdef ENABLE_SMART_CONFIG
+	if(static_cast<uint8_t>(reason) > 200) {
+		WifiStation.smartConfigStart(SCT_EspTouch, onSmartConfig);
+	}
+#endif
+}
+
+void IRAM_ATTR onButtonChange()
 {
 	// TODO: if the button is pressed for more than 7 seconds then start the smart config process
 	if(0) {

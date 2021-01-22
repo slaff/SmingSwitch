@@ -18,6 +18,7 @@
 			<name>GetPower</name>
 			<argumentList>
 				<argument>
+                    <retval/>
 					<name>RetPowerStatusValue</name>
 					<relatedStateVariable>PowerStatus</relatedStateVariable>
 					<direction>out</direction>
@@ -29,21 +30,27 @@
 			<name>GetHumidity</name>
 			<argumentList>
 				<argument>
+                    <retval/>
 					<name>HumidityValue</name>
 					<relatedStateVariable>Humidity</relatedStateVariable>
 					<direction>out</direction>
 				</argument>
 			</argumentList>
+        </action>
+
+        <action>
             <name>GetTemperature</name>
             <argumentList>
                 <argument>
+                    <retval/>
                     <name>TemperatureValue</name>
                     <relatedStateVariable>Temperature</relatedStateVariable>
                     <direction>out</direction>
                 </argument>
             </argumentList>
-            <!-- TODO: Add here also comfort and dewpoint statuses -->
 		</action>
+
+        <!-- TODO: Add here also comfort and dewpoint statuses -->
 
 	</actionList>
 	<serviceStateTable>

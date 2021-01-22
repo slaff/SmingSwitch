@@ -5,6 +5,8 @@
 #include <Network/SSDP/Server.h>
 #include <SmingSwitch.h>
 
+namespace
+{
 Timer humidityTimer;
 Timer procTimer;
 Timer switchTimer;
@@ -179,6 +181,8 @@ void checkHumidity()
 		startSwitch();
 	}
 }
+
+} // namespace
 
 void init()
 {

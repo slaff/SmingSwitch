@@ -11,11 +11,7 @@ public:
 	using PowerStatusCallback = Delegate<bool()>;
 
 	SmingSwitch(uint8_t id, float& temperature, float& humidity, PowerChangeCallback changeCallback,
-				PowerStatusCallback statusCallback)
-		: id(id), temperature(temperature), humidity(humidity), changeCallback(changeCallback),
-		  statusCallback(statusCallback)
-	{
-	}
+				PowerStatusCallback statusCallback);
 
 	String getField(Field desc) const override
 	{
@@ -81,7 +77,7 @@ public:
 	{
 		switch(desc) {
 		case Field::serviceId:
-			return F("urn:Belkin:serviceId:metainfo1");
+			return F("urn:sming-org:serviceId:SwitchTh0161");
 		default:
 			return Service::getField(desc);
 		}

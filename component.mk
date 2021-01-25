@@ -1,9 +1,18 @@
 # User Settings (See also: https://templates.blakadder.com/sonoff_TH.html)
 
+
+# PINS - these should match Sonoff TH16 models up to 2020
 LED_PIN ?= 13
-SWITCH_PIN ?= 12
+RELAY_PIN ?= 12
 DHT_PIN ?= 14
 BUTTON_PIN ?= 0
+
+# Frequencies (in ms)
+BLINK_FREQ ?= 1000
+HUMIDITY_FREQ ?= 30000
+RELAY_INITIAL_DELAY ?= 60000
+BUTTON_PRESSED_WAIT ?= 70000
+
 
 # End of User Settings
 
@@ -40,7 +49,7 @@ COMPONENT_DEPENDS := DHTesp UPnP-Schema
 # COMPONENT_CXXFLAGS :=
 
 ## Configure flash parameters (for ESP12-E and other new boards):
-# SPI_MODE := dio
+SPI_MODE := dio
 
 ## SPIFFS options
 DISABLE_SPIFFS := 1
@@ -51,4 +60,5 @@ ifneq ($(SMING_ARCH),Host)
 ENABLE_SMART_CONFIG = 1
 endif
  
-APP_CFLAGS := -DLED_PIN=$(LED_PIN) -DSWITCH_PIN=$(SWITCH_PIN) -DDHT_PIN=$(DHT_PIN) -DBUTTON_PIN=$(BUTTON_PIN)
+APP_CFLAGS := -DLED_PIN=$(LED_PIN) -DRELAY_PIN=$(RELAY_PIN) -DDHT_PIN=$(DHT_PIN) -DBUTTON_PIN=$(BUTTON_PIN) \
+              -DBLINK_FREQ=$(BLINK_FREQ) -DHUMIDITY_FREQ=$(HUMIDITY_FREQ) -DRELAY_INITIAL_DELAY=$(RELAY_INITIAL_DELAY) -DBUTTON_PRESSED_WAIT=$(BUTTON_PRESSED_WAIT)

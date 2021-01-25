@@ -7,11 +7,11 @@ namespace schemas_sming_org
 class SmingSwitch : public device::SmingSwitch1Template<SmingSwitch>
 {
 public:
-	using PowerChangeCallback = Delegate<void(bool state)>;
-	using PowerStatusCallback = Delegate<bool()>;
+	using RelayChangeCallback = Delegate<void(bool state)>;
+	using RelayStatusCallback = Delegate<bool()>;
 
-	SmingSwitch(uint8_t id, float& temperature, float& humidity, PowerChangeCallback changeCallback,
-				PowerStatusCallback statusCallback);
+	SmingSwitch(uint8_t id, float& temperature, float& humidity, RelayChangeCallback changeCallback,
+				RelayStatusCallback statusCallback);
 
 	String getField(Field desc) const override
 	{
@@ -45,12 +45,12 @@ public:
 		return temperature;
 	}
 
-	bool getPower()
+	bool getRelay()
 	{
 		return statusCallback();
 	}
 
-	void setPower(bool state)
+	void setRelay(bool state)
 	{
 		return changeCallback(state);
 	}
@@ -59,8 +59,8 @@ private:
 	uint8_t id;
 	float temperature;
 	float humidity;
-	PowerChangeCallback changeCallback;
-	PowerStatusCallback statusCallback;
+	RelayChangeCallback changeCallback;
+	RelayStatusCallback statusCallback;
 };
 
 class SwitchTh016Service : public service::SwitchTh0161Template<SwitchTh016Service>
@@ -95,15 +95,15 @@ public:
 		return Error::Success;
 	}
 
-	Error getPower(GetPower::Response response)
+	Error getRelay(GetRelay::Response response)
 	{
-		response.setRetPowerStatusValue(getDevice().getPower());
+		response.setRetRelayStatusValue(getDevice().getRelay());
 		return Error::Success;
 	}
 
-	Error setPower(bool state, SetPower::Response response)
+	Error setRelay(bool state, SetRelay::Response response)
 	{
-		getDevice().setPower(state);
+		getDevice().setRelay(state);
 		return Error::Success;
 	}
 };

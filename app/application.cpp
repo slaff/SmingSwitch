@@ -3,15 +3,16 @@
 #include <Network/UPnP/DeviceHost.h>
 #include <Network/UPnP/ControlPoint.h>
 #include <Network/SSDP/Server.h>
-#include <SmingSwitch.h>
+#include "SmingSwitch.cpp"
 
 namespace
 {
 Timer humidityTimer;
 Timer procTimer;
-Timer switchTimer;
+Timer relayTimer;
+Timer* buttonTimer = nullptr;
 bool state = true;
-bool switchedAllowed = true;
+bool relayAllowed = true;
 
 // Public states of the device
 float humidity = 0;
@@ -21,10 +22,10 @@ bool running = false;
 DHTesp dht;
 HttpServer server;
 
-bool isPowerOn();
-void setPowerState(bool on);
+bool isRelayOn();
+void setRelayState(bool on);
 
-UPnP::schemas_sming_org::SmingSwitch smingSwitch(1, humidity, temperature, setPowerState, isPowerOn);
+UPnP::schemas_sming_org::SmingSwitch smingSwitch(1, humidity, temperature, setRelayState, isRelayOn);
 
 NtpClient* ntpClient = nullptr;
 
@@ -34,26 +35,24 @@ void blink()
 	state = !state;
 }
 
-bool isPowerOn()
+bool isRelayOn()
 {
-	uint8_t state = digitalRead(SWITCH_PIN);
-	// TODO: read the state of the switch pin and return if it is on or off
-	return state == HIGH;
+	return digitalRead(RELAY_PIN) == LOW;
 }
 
-void setPowerState(bool on)
+void setRelayState(bool on)
 {
-	digitalWrite(SWITCH_PIN, on ? HIGH : LOW);
+	digitalWrite(RELAY_PIN, on ? LOW : HIGH);
 }
 
-void startSwitch()
+void startRelay()
 {
 	if(running) {
 		return;
 	}
 
-	if(humidity > 60 && switchedAllowed) {
-		setPowerState(true);
+	if(humidity > 60 && relayAllowed) {
+		setRelayState(true);
 	}
 }
 
@@ -131,10 +130,15 @@ void onNtpReceive(NtpClient& client, time_t timestamp)
 	SystemClock.setTime(timestamp, eTZ_UTC); //System timezone is LOCAL so to set it from UTC we specify TZ
 	debug_d("Time synchronized: %s", SystemClock.getSystemTimeString().c_str());
 	DateTime today(timestamp);
-	switchedAllowed = true;
-	// check what is the time -> if earlier than 7:00 and later than 21:00 -> don't start the switch (attached fan) yet
+	relayAllowed = true;
+	// check what is the time -> if earlier than 7:00 and later than 21:00 -> don't start the relay (attached fan) yet
 	if(today.Hour < 7 && today.Hour > 20) {
-		switchedAllowed = false;
+		relayAllowed = false;
+	}
+
+	// check the month -> in sommer the fan is not really needed
+	if(today.Month > 5 && today.Month < 9) {
+		relayAllowed = false;
 	}
 }
 
@@ -162,11 +166,24 @@ void onDisconnected(String ssid, const MacAddress& bssid, WifiDisconnectReason r
 #endif
 }
 
+void IRAM_ATTR startSmartConfig()
+{
+	onDisconnected(nullptr, MacAddress(), WIFI_DISCONNECT_REASON_NO_AP_FOUND);
+	if(buttonTimer != nullptr) {
+		buttonTimer->stop();
+	}
+}
+
 void IRAM_ATTR onButtonChange()
 {
-	// TODO: if the button is pressed for more than 7 seconds then start the smart config process
-	if(0) {
-		onDisconnected(nullptr, MacAddress(), WIFI_DISCONNECT_REASON_NO_AP_FOUND);
+	bool on = (digitalRead(BUTTON_PIN) == LOW);
+	if(on && buttonTimer == nullptr) {
+		buttonTimer = new Timer();
+		buttonTimer->initializeMs<BUTTON_PRESSED_WAIT>(startSmartConfig).startOnce();
+	} else if(!on && buttonTimer != nullptr) {
+		buttonTimer->stop();
+		delete buttonTimer;
+		buttonTimer = nullptr;
 	}
 }
 
@@ -178,7 +195,7 @@ void checkHumidity()
 
 	float dewPoint = dht.computeDewPoint(temperature, humidity);
 	if(dewPoint > 17.0f) {
-		startSwitch();
+		startRelay();
 	}
 }
 
@@ -195,15 +212,16 @@ void init()
 
 	// Start the humidity timer
 	dht.setup(DHT_PIN, DHTesp::DHT22);
-	humidityTimer.initializeMs<30 * 1000>(checkHumidity).start();
+	humidityTimer.initializeMs<HUMIDITY_FREQ>(checkHumidity).start();
 
-	// Prepare the control of the switch pin
-	pinMode(SWITCH_PIN, INPUT);
-	switchTimer.initializeMs<60000>(startSwitch);
+	// Prepare the control of the relay pin
+	pinMode(RELAY_PIN, OUTPUT);
+	digitalWrite(RELAY_PIN, HIGH);
+	relayTimer.initializeMs<RELAY_INITIAL_DELAY>(startRelay).startOnce();
 
 	// Prepare the LED for blinking. It should start blinking when there is no internet connection
 	pinMode(LED_PIN, OUTPUT);
-	procTimer.initializeMs(1000, blink);
+	procTimer.initializeMs<BLINK_FREQ>(blink);
 
 	WifiAccessPoint.enable(false);
 	WifiStation.enable(true);

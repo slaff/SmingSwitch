@@ -5,22 +5,22 @@
 	</specVersion>
 	<actionList>
 		<action>
-			<name>SetPower</name>
+			<name>SetRelay</name>
 			<argumentList>
 				<argument>
-					<name>PowerStatusValue</name>
-					<relatedStateVariable>PowerStatus</relatedStateVariable>
+					<name>RelayStatusValue</name>
+					<relatedStateVariable>RelayStatus</relatedStateVariable>
 					<direction>in</direction>
 				</argument>
 			</argumentList>
 		</action>
 		<action>
-			<name>GetPower</name>
+			<name>GetRelay</name>
 			<argumentList>
 				<argument>
                     <retval/>
-					<name>RetPowerStatusValue</name>
-					<relatedStateVariable>PowerStatus</relatedStateVariable>
+					<name>RetRelayStatusValue</name>
+					<relatedStateVariable>RelayStatus</relatedStateVariable>
 					<direction>out</direction>
 				</argument>
 			</argumentList>
@@ -52,7 +52,7 @@
 	</actionList>
 	<serviceStateTable>
 		<stateVariable sendEvents="no">
-			<name>PowerStatus</name>
+			<name>RelayStatus</name>
 			<dataType>boolean</dataType>
 			<defaultValue>0</defaultValue>
 		</stateVariable>

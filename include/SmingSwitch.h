@@ -16,9 +16,15 @@ public:
 	String getField(Field desc) const override
 	{
 		switch(desc) {
-		case Field::UDN:
+		case Field::UDN: {
 			// This is the unique id of the device
-			return F("uuid:68317e07-d356-455a-813b-d23f2556354a");
+			String uuid = F("uuid:");
+			char buf[32]{0};
+			m_snprintf(buf, 32, "%x", system_get_chip_id());
+			buf[31] = '\0';
+			uuid += buf;
+			return uuid;
+		}
 			//		case Field::serialNumber:
 			//			return F("12345678");
 		default:

@@ -4,6 +4,7 @@
 #include <Network/UPnP/ControlPoint.h>
 #include <Network/SSDP/Server.h>
 #include "SmingSwitch.cpp"
+#include "AppDigiHooks.h"
 
 namespace
 {
@@ -205,6 +206,10 @@ void init()
 {
 	Serial.begin(SERIAL_BAUD_RATE);
 	Serial.systemDebugOutput(true);
+
+#ifdef ARCH_HOST
+	setDigitalHooks(&appDigiHooks);
+#endif
 
 	// Start detecting if the button was pressed
 	attachInterrupt(BUTTON_PIN, onButtonChange, CHANGE);

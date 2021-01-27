@@ -51,22 +51,23 @@
 		</action>
 	</actionList>
 	<serviceStateTable>
-		<stateVariable sendEvents="no">
+		<stateVariable sendEvents="yes">
 			<name>RelayStatus</name>
 			<dataType>boolean</dataType>
 			<defaultValue>0</defaultValue>
 		</stateVariable>
-		<stateVariable sendEvents="no">
+		<stateVariable sendEvents="yes">
 			<name>Humidity</name>
 			<dataType>float</dataType>
-			<defaultValue>0</defaultValue>
+			<defaultValue>0.0</defaultValue>
 		</stateVariable>
-        <stateVariable sendEvents="no">
+        <stateVariable sendEvents="yes">
             <name>Temperature</name>
             <dataType>float</dataType>
-            <defaultValue>0</defaultValue>
+            <defaultValue>0.0</defaultValue>
         </stateVariable>
 	</serviceStateTable>
 	<serviceType>urn:schemas-sming-org:service:SwitchTh016:1</serviceType>
+	<serviceId>urn:sming-org:serviceId:SwitchTh0161</serviceId>
 </scpd>
 

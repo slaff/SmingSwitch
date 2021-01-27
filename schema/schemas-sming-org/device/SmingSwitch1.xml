@@ -14,7 +14,7 @@
             <serviceId>urn:sming-org:serviceId:SwitchTh0161</serviceId>
             <SCPDURL>/xml/SwitchTh0161.xml</SCPDURL>
             <controlURL>/upnp/control/SwitchTh0161</controlURL>
-            <eventSubURL />
+            <eventSubURL>/upnp/event/SwitchTh0161</eventSubURL>
         </service>
     </serviceList>
     <presentationURL/>

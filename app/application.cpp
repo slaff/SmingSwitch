@@ -3,11 +3,23 @@
 #include <Network/UPnP/DeviceHost.h>
 #include <Network/UPnP/ControlPoint.h>
 #include <Network/SSDP/Server.h>
+#include <Storage/SpiFlash.h>
+#include <OtaUpgrade/Mqtt/RbootPayloadParser.h>
+
+#if ENABLE_OTA_ADVANCED
+#include <OtaUpgrade/Mqtt/AdvancedPayloadParser.h>
+#endif
+
 #include "SmingSwitch.cpp"
+
+#ifdef ARCH_HOST
 #include "AppDigiHooks.h"
+#endif
 
 namespace
 {
+MqttClient mqtt;
+
 Timer humidityTimer;
 Timer procTimer;
 Timer relayTimer;
@@ -29,6 +41,87 @@ void setRelayState(bool on);
 UPnP::schemas_sming_org::SmingSwitch smingSwitch(1, humidity, temperature, setRelayState, isRelayOn);
 
 NtpClient* ntpClient = nullptr;
+
+
+Storage::Partition findRomPartition(uint8_t slot)
+{
+	auto part = Storage::spiFlash->partitions().findOta(slot);
+	if(!part) {
+		debug_w("Rom slot %d not found", slot);
+	}
+	return part;
+}
+
+void otaUpdate()
+{
+	if(mqtt.isProcessing()) {
+		Serial.println("There is an update in progress. Refusing to start new update.");
+		return;
+	}
+
+	uint8 slot = rboot_get_current_rom();
+	if(slot == 0) {
+		slot = 1;
+	} else {
+		slot = 0;
+	}
+
+	Serial.println("Checking for a new application firmware...");
+
+	auto part = findRomPartition(slot);
+	if(!part) {
+		Serial.println("FAILED: Cannot find application address");
+		return;
+	}
+
+#ifdef ENABLE_SSL
+	mqtt.setSslInitHandler([](Ssl::Session& session) {
+		// These fingerprints change very frequently.
+		static const Ssl::Fingerprint::Cert::Sha1 sha1Fingerprint PROGMEM = {MQTT_FINGERPRINT_SHA1};
+
+		// Trust certificate only if it matches the SHA1 fingerprint...
+		session.validators.pin(sha1Fingerprint);
+
+		// We're using fingerprints, so don't attempt to validate full certificate
+		session.options.verifyLater = true;
+
+#if ENABLE_CLIENT_CERTIFICATE
+		session.keyCert.assign(privateKeyData, certificateData);
+#endif
+
+		// Use all supported cipher suites to make a connection
+		session.cipherSuites = &Ssl::CipherSuites::full;
+	});
+#endif
+
+	mqtt.connect(Url(MQTT_URL), "sming");
+
+#if ENABLE_OTA_ADVANCED
+	/*
+	 * The advanced parser suppors all firmware upgrades supported by the `OtaUpgrade` library.
+	 * `OtaUpgrade` library provides firmware signing, firmware encryption and so on.
+	 */
+	auto parser = new OtaUpgrade::Mqtt::AdvancedPayloadParser(APP_VERSION_PATCH);
+#else
+	/*
+	 * The command below uses class that stores the firmware directly
+	 * using RbootOutputStream on a location provided by us
+	 */
+	auto parser = new OtaUpgrade::Mqtt::RbootPayloadParser(part, APP_VERSION_PATCH);
+#endif
+
+	mqtt.setPayloadParser([parser](MqttPayloadParserState& state, mqtt_message_t* message, const char* buffer,
+								   int length) -> int { return parser->parse(state, message, buffer, length); });
+
+	String updateTopic = "a/";
+	updateTopic += APP_ID;
+	updateTopic += "/u/";
+	updateTopic += APP_VERSION;
+	debug_d("Subscribing to topic: %s", updateTopic.c_str());
+	mqtt.subscribe(updateTopic);
+}
+
+
 
 void blink()
 {
@@ -128,6 +221,8 @@ void initUPnP()
 
 void onNtpReceive(NtpClient& client, time_t timestamp)
 {
+	static bool otaRunning = false;
+
 	SystemClock.setTime(timestamp, eTZ_UTC); //System timezone is LOCAL so to set it from UTC we specify TZ
 	debug_d("Time synchronized: %s", SystemClock.getSystemTimeString().c_str());
 	DateTime today(timestamp);
@@ -140,6 +235,11 @@ void onNtpReceive(NtpClient& client, time_t timestamp)
 	// check the month -> in sommer the fan is not really needed
 	if(today.Month > 5 && today.Month < 9) {
 		relayAllowed = false;
+	}
+
+	if(!otaRunning) {
+		otaRunning = true;
+		otaUpdate();
 	}
 }
 

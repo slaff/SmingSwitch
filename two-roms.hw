@@ -1,0 +1,29 @@
+{
+    "name": "Two ROM slots",
+    "base_config": "standard",
+    "options": [
+        "4m"
+    ],
+    "partitions": {
+        "rom0": {
+            "device": "spiFlash",
+            "address": "0x00002000",
+            "size": "1020K",
+            "type": "app",
+            "subtype": "factory",
+            "readonly": false,
+            "encrypted": false,
+            "filename": "$(BLANK_BIN)"
+        },
+        "rom1": {
+            "device": "spiFlash",
+            "address": "0x00102000",
+            "size": "1020K",
+            "type": "app",
+            "subtype": "ota_1",
+            "readonly": false,
+            "encrypted": false,
+            "filename": "$(BLANK_BIN)"
+        }
+    }
+}

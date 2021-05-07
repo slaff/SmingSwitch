@@ -4,26 +4,21 @@
     "options": [
         "4m"
     ],
+    "partition_table_offset": "0x003fa000",
     "partitions": {
         "rom0": {
-            "device": "spiFlash",
             "address": "0x00002000",
-            "size": "1020K",
-            "type": "app",
-            "subtype": "factory",
-            "readonly": false,
-            "encrypted": false,
-            "filename": "$(BLANK_BIN)"
+            "size": "1016K",
+            "subtype": "ota_0"
         },
         "rom1": {
-            "device": "spiFlash",
             "address": "0x00102000",
-            "size": "1020K",
+            "size": "1016K",
             "type": "app",
             "subtype": "ota_1",
             "readonly": false,
             "encrypted": false,
-            "filename": "$(BLANK_BIN)"
+            "filename": "$(RBOOT_ROM_1_BIN)"
         }
     }
 }

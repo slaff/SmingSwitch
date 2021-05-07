@@ -27,7 +27,7 @@ APP_VERSION_PATCH := 0
 
 ## [TLS/SSL settings ] ##
 # Uncomment the line below to start using SSL
-CONFIG_VARS := ENABLE_SSL 
+CONFIG_VARS += ENABLE_SSL 
 # ENABLE_SSL := Bearssl
 
 # Set this to one if the remote firmware server requires client certificate
@@ -64,6 +64,7 @@ ENABLE_OTA_ADVANCED ?= 0
 
 COMPONENT_DEPENDS := DHTesp UPnP-Schema OtaUpgradeMqtt
 
+CONFIG_VARS += ENABLE_SMART_CONFIG
 ifneq ($(SMING_ARCH),Host)
 ENABLE_SMART_CONFIG = 1
 else

@@ -20,10 +20,10 @@ namespace
 {
 MqttClient mqtt;
 
-Timer humidityTimer;
-Timer procTimer;
-Timer relayTimer;
-Timer* buttonTimer = nullptr;
+SimpleTimer humidityTimer;
+SimpleTimer procTimer;
+SimpleTimer relayTimer;
+SimpleTimer* buttonTimer = nullptr;
 bool state = true;
 bool relayAllowed = true;
 
@@ -41,7 +41,6 @@ void setRelayState(bool on);
 UPnP::schemas_sming_org::SmingSwitch smingSwitch(1, humidity, temperature, setRelayState, isRelayOn);
 
 NtpClient* ntpClient = nullptr;
-
 
 Storage::Partition findRomPartition(uint8_t slot)
 {
@@ -120,8 +119,6 @@ void otaUpdate()
 	debug_d("Subscribing to topic: %s", updateTopic.c_str());
 	mqtt.subscribe(updateTopic);
 }
-
-
 
 void blink()
 {
@@ -279,7 +276,7 @@ void IRAM_ATTR onButtonChange()
 {
 	bool on = (digitalRead(BUTTON_PIN) == LOW);
 	if(on && buttonTimer == nullptr) {
-		buttonTimer = new Timer();
+		buttonTimer = new SimpleTimer();
 		buttonTimer->initializeMs<BUTTON_PRESSED_WAIT>(startSmartConfig).startOnce();
 	} else if(!on && buttonTimer != nullptr) {
 		buttonTimer->stop();

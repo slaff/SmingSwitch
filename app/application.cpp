@@ -4,7 +4,8 @@
 #include <Network/UPnP/ControlPoint.h>
 #include <Network/SSDP/Server.h>
 #include <Storage/SpiFlash.h>
-#include <OtaUpgrade/Mqtt/RbootPayloadParser.h>
+#include <Ota/Manager.h>
+#include <OtaUpgrade/Mqtt/StandardPayloadParser.h>
 
 #if ENABLE_OTA_ADVANCED
 #include <OtaUpgrade/Mqtt/AdvancedPayloadParser.h>
@@ -42,15 +43,6 @@ UPnP::schemas_sming_org::SmingSwitch smingSwitch(1, humidity, temperature, setRe
 
 NtpClient* ntpClient = nullptr;
 
-Storage::Partition findRomPartition(uint8_t slot)
-{
-	auto part = Storage::spiFlash->partitions().findOta(slot);
-	if(!part) {
-		debug_w("Rom slot %d not found", slot);
-	}
-	return part;
-}
-
 void otaUpdate()
 {
 	if(mqtt.isProcessing()) {
@@ -58,16 +50,10 @@ void otaUpdate()
 		return;
 	}
 
-	uint8 slot = rboot_get_current_rom();
-	if(slot == 0) {
-		slot = 1;
-	} else {
-		slot = 0;
-	}
-
 	Serial.println("Checking for a new application firmware...");
 
-	auto part = findRomPartition(slot);
+	// select rom slot to flash
+	auto part = OtaManager.getNextBootPartition();
 	if(!part) {
 		Serial.println("FAILED: Cannot find application address");
 		return;
@@ -106,7 +92,7 @@ void otaUpdate()
 	 * The command below uses class that stores the firmware directly
 	 * using RbootOutputStream on a location provided by us
 	 */
-	auto parser = new OtaUpgrade::Mqtt::RbootPayloadParser(part, APP_VERSION_PATCH);
+	auto parser = new OtaUpgrade::Mqtt::StandardPayloadParser(part, APP_VERSION_PATCH);
 #endif
 
 	mqtt.setPayloadParser([parser](MqttPayloadParserState& state, mqtt_message_t* message, const char* buffer,

@@ -1,0 +1,49 @@
+mainmenu "Smaing Switch Configuration Menu"
+
+menu "Pins"
+
+config LED_PIN
+    int "LED pin"
+    range 0 35
+    default 13
+
+config RELAY_PIN
+    int "Relay pin"
+    range 0 35
+    default 12
+
+config DHT_PIN
+    int "DHT pin"
+    range 0 35
+    default 14
+    
+config BUTTON_PIN
+    int "Button Pin"
+    range 0 35
+    default 0
+
+endmenu
+
+menu "Frequencies"
+
+config BLINK_FREQ
+    int "Blink frequency in ms."
+    range 0 100000
+    default 1000
+    
+config HUMIDITY_FREQ
+    int "Humidity check frequency in ms."
+    range 0 100000
+    default 30000
+    
+config RELAY_INITIAL_DELAY
+    int "Relay initial delay in ms."
+    range 0 100000
+    default 60000
+    
+config BUTTON_PRESSED_WAIT
+    int "Wait for pressed button in ms."
+    range 0 100000
+    default 70000
+
+endmenu

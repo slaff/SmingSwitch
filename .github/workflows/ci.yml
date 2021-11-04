@@ -39,6 +39,8 @@ jobs:
         SMING_ARCH: Esp8266
       run: |
         source $SMING_HOME/../Tools/export.sh
+        make fetch UPnP-Schema || echo "Done"
+        make SMING_ARCH=$SMING_ARCH python-requirements
         make
     - name: Compile Application for Host
       env: 
@@ -46,4 +48,4 @@ jobs:
         SMING_ARCH: Host
       run: |
         source $SMING_HOME/../Tools/export.sh
-        make
+        make SMING_ARCH=$SMING_ARCH

@@ -1,4 +1,4 @@
-mainmenu "Smaing Switch Configuration Menu"
+mainmenu "Sming Switch Configuration Menu"
 
 menu "Pins"
 

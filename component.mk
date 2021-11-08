@@ -21,9 +21,11 @@ MAX_PINS ?= 32
 APP_ID ?= "switch"
 
 # Application version: string containing only the major and minor version separated by comma
-APP_VERSION := "0.2"
+CONFIG_VARS += APP_VERSION
+APP_VERSION := "0.1"
 # Application patch version: integer containing only the patch version
-APP_VERSION_PATCH := 0
+CONFIG_VARS += APP_VERSION_PATCH
+APP_VERSION_PATCH := 2
 
 ## [TLS/SSL settings ] ##
 # Uncomment the line below to start using SSL
@@ -38,12 +40,12 @@ ENABLE_CLIENT_CERTIFICATE ?= 0
 ## [ Firmware Update Server ] ## 
 CONFIG_VARS += MQTT_URL
 ifeq ($(MQTT_URL),)
-    MQTT_URL := "mqtt://attachix.com:1883"
+    MQTT_URL := "mqtt://smingapp:Sm1ngApp@attachix.com:1883"
     ifdef ENABLE_SSL
     	ifneq ($(ENABLE_CLIENT_CERTIFICATE),0)
-    		MQTT_URL := "mqtts://test.mosquitto.org:8884"
+    		MQTT_URL := "mqtts://smingapp:Sm1ngApp@attachix.com:8884"
     	else
-    		MQTT_URL := "mqtts://test.mosquitto.org:8883"
+    		MQTT_URL := "mqtts://smingapp:Sm1ngApp@attachix.com:8883"
     	endif
     endif
 endif

@@ -52,8 +52,8 @@ jobs:
       env: 
         SMING_HOME: /tmp/Sming/Sming
         SMING_ARCH: Esp8266
+        RELEASE_TOKEN: ${{ secrets.RELEASE_SECRET }}
       run: |
-        source $SMING_HOME/../Tools/export.sh
         # Setup networking
         sudo ip tuntap add dev tap0 mode tap user $(whoami)
         sudo ip a a dev tap0 192.168.13.1/24
@@ -65,10 +65,13 @@ jobs:
         sudo iptables -t nat -A POSTROUTING -o "$INTERNET_IF" -j MASQUERADE
         sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
         sudo iptables -A FORWARD -i tap0 -o "$INTERNET_IF" -j ACCEPT
+        sudo ethtool -K "$INTERNET_IF" tx off rx off
+        # Main logic
+        set -x
         export TAG_VERSION=$(git describe --tags --abbrev=0)
         export RELEASE_VERSION=(${TAG_VERSION//./ })
         export APP_VERSION="${RELEASE_VERSION[0]}.${RELEASE_VERSION[1]}"
         make SMING_ARCH=$SMING_ARCH APP_VERSION=$APP_VERSION APP_VERSION_PATCH=${RELEASE_VERSION[2]}
         make -C $SMING_HOME/Libraries/OtaUpgradeMqtt/tools/deployer SMING_ARCH=Host
         make ota-pack OTA_PATCH_VERSION=${RELEASE_VERSION[2]}
-        make ota-deploy MQTT_FIRMWARE_URL=mqtts://${{ secrets.RELEASE_SECRET }}@attachix.com:8883/a/switch/u/${RELEASE_VERSION[0]}.${RELEASE_VERSION[1]} 
+        make ota-deploy MQTT_FIRMWARE_URL=mqtts://$RELEASE_TOKEN@attachix.com:8883/a/switch/u/${RELEASE_VERSION[0]}.${RELEASE_VERSION[1]}
